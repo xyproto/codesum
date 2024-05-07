@@ -1,0 +1,7 @@
+codesum
+*.o
+*.bak
+*.swp
+*.tmp
+.DS_Store
+include.txt
