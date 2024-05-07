@@ -10,6 +10,8 @@ Summarize Go, Python, C, C++ or Rust project as a Markdown document that can be 
 
 Run `codesum` in the root directory of a project.
 
+If you're on macOS, you might want to run `codesum | pbcopy` to copy all relevant code into the clipboard.
+
 ## Example output
 
 ````
