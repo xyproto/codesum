@@ -8,22 +8,12 @@ import (
 	"strings"
 )
 
-func isValidSourceFile(path string, projectType string) bool {
-	ext := strings.ToLower(filepath.Ext(path))
-	switch projectType {
-	case "go":
-		return ext == ".go"
-	case "cpp":
-		return ext == ".cpp" || ext == ".hpp" || ext == ".cc" || ext == ".h"
-	case "rust":
-		return ext == ".rs"
-	case "c":
-		return ext == ".c" || ext == ".h"
-	case "python":
-		return ext == ".py"
-	default:
-		return false
+func recognizedExtension(path string) bool {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".go", ".cpp", ".hpp", ".cc", ".h", ".rs", ".c", ".py":
+		return true
 	}
+	return false
 }
 
 func getProjectInfo() (string, string, error) {
@@ -51,7 +41,6 @@ func getProjectInfo() (string, string, error) {
 	if _, err := os.Stat("Makefile"); err == nil {
 		return "C Project", "c", nil
 	}
-
 	return projectName, detectProjectType(), nil
 }
 
@@ -98,28 +87,50 @@ func readGitConfig(configFilePath string) (string, error) {
 }
 
 func detectProjectType() string {
+	cppFiles := false // Track presence of C++ files
+	cFiles := false   // Track presence of C files
+
 	files, err := os.ReadDir(".")
 	if err != nil {
 		return "unknown"
 	}
+
 	for _, file := range files {
-		if strings.HasSuffix(file.Name(), ".go") {
+		switch ext := strings.ToLower(filepath.Ext(file.Name())); ext {
+		case ".go":
 			return "go"
-		}
-		if strings.HasSuffix(file.Name(), ".cpp") || strings.HasSuffix(file.Name(), ".hpp") {
-			return "cpp"
-		}
-		if strings.HasSuffix(file.Name(), ".rs") {
+		case ".cpp", ".hpp", ".cc":
+			cppFiles = true
+		case ".c":
+			cFiles = true
+		case ".h":
+			// Note that .h could be either C or C++, will determine after the loop
+			continue
+		case ".rs":
 			return "rust"
-		}
-		if strings.HasSuffix(file.Name(), ".c") || strings.HasSuffix(file.Name(), ".h") {
-			return "c"
-		}
-		if strings.HasSuffix(file.Name(), ".py") {
+		case ".py":
 			return "python"
 		}
 	}
+
+	if cppFiles {
+		return "cpp" // Prioritize C++ if any .cpp, .hpp, or .cc files found
+	}
+	if cFiles || (cppFiles && filesContainH(files)) {
+		return "c" // Return C only if .c files found or both C++ and .h files without .cpp/.hpp/.cc
+	}
+
 	return "unknown"
+}
+
+// Additional helper function to check if directory contains any .h files
+func filesContainH(files []os.DirEntry) bool {
+	for _, file := range files {
+		if strings.ToLower(filepath.Ext(file.Name())) == ".h" {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -136,7 +147,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !isValidSourceFile(path, projectType) {
+		if d.IsDir() || !recognizedExtension(path) {
 			return nil
 		}
 		content, err := os.ReadFile(path)
