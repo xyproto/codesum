@@ -12,6 +12,10 @@ Run `codesum` in the root directory of a project.
 
 If you're on macOS, you might want to run `codesum | pbcopy` to copy all relevant code into the clipboard.
 
+## Note
+
+This utility is a bit experimental and needs more testing.
+
 ## Example output
 
 ````
