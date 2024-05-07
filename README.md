@@ -18,6 +18,8 @@ This alias is also a possibility:
 alias c="$HOME/go/bin/codesum | /usr/bin/pbcopy"
 ```
 
+Use the `-j` or `--json` flag to get a JSON summary instead.
+
 ## Note
 
 This utility is a bit experimental and needs more testing.
