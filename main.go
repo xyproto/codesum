@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+const versionString = "codesum 1.0.2"
 
 func recognizedExtension(path string) bool {
 	switch strings.ToLower(filepath.Ext(path)) {
@@ -134,6 +137,15 @@ func filesContainH(files []os.DirEntry) bool {
 }
 
 func main() {
+	versionFlag := flag.Bool("v", false, "Prints the version of the program")
+	versionLongFlag := flag.Bool("version", false, "Prints the version of the program")
+	flag.Parse()
+
+	if *versionFlag || *versionLongFlag {
+		fmt.Println(versionString)
+		return
+	}
+
 	projectName, projectType, err := getProjectInfo()
 	if err != nil {
 		fmt.Printf("Failed to determine project type or name: %v\n", err)
@@ -147,7 +159,13 @@ func main() {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !recognizedExtension(path) {
+		if d.IsDir() {
+			if path == "vendor" || strings.HasPrefix(path, "vendor/") {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !recognizedExtension(path) {
 			return nil
 		}
 		content, err := os.ReadFile(path)
