@@ -203,5 +203,5 @@ func main() {
 
 ## General info
 
-* Version: 1.0.2
+* Version: 1.0.4
 * License: BSD-3

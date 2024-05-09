@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const versionString = "codesum 1.0.3"
+const versionString = "codesum 1.0.4"
 
 var (
 	jsonOutput  bool
