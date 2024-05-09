@@ -9,9 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
-
-	"golang.org/x/sync/errgroup"
 )
 
 const versionString = "codesum 1.0.3"
@@ -187,8 +184,6 @@ func readGitConfig(configFilePath string) (string, error) {
 
 func walkDirectoryAndCollectFiles(ignores map[string]struct{}) ([]FileInfo, error) {
 	var files []FileInfo
-	g := new(errgroup.Group)
-	var mu sync.Mutex // To protect concurrent writes to the files slice
 
 	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -201,35 +196,28 @@ func walkDirectoryAndCollectFiles(ignores map[string]struct{}) ([]FileInfo, erro
 			ext := filepath.Ext(path)
 			language := languageFromExtension(ext)
 			if language != "Unknown" {
-				g.Go(func() error {
-					fileInfo, err := os.Stat(path)
-					if err != nil {
-						return err
-					}
-					content, err := os.ReadFile(path)
-					if err != nil {
-						return err
-					}
-					lineCount, _ := countLines(string(content))
-					mu.Lock()
-					files = append(files, FileInfo{
-						Path:         path,
-						Language:     language,
-						LineCount:    lineCount,
-						LastModified: fileInfo.ModTime().Format("2006-01-02 15:04:05"),
-						Contents:     string(content),
-					})
-					mu.Unlock()
-					return nil
+				fileInfo, err := os.Stat(path)
+				if err != nil {
+					return err
+				}
+				content, err := os.ReadFile(path)
+				if err != nil {
+					return err
+				}
+				lineCount, _ := countLines(string(content))
+
+				files = append(files, FileInfo{
+					Path:         path,
+					Language:     language,
+					LineCount:    lineCount,
+					LastModified: fileInfo.ModTime().Format("2006-01-02 15:04:05"),
+					Contents:     string(content),
 				})
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		return nil, err
-	}
-	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 	return files, nil
