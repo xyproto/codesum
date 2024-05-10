@@ -27,5 +27,5 @@ Use the `-j` or `--json` flag to get a JSON summary instead.
 
 ## General info
 
-* Version: 1.0.4
+* Version: 1.1.0
 * License: BSD-3
