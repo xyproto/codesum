@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const versionString = "codesum 1.0.4"
+const versionString = "codesum 1.1.0"
 
 var (
 	jsonOutput  bool
@@ -49,7 +49,7 @@ type ProjectInfo struct {
 func recognizedExtension(path string) bool {
 	ext := strings.ToLower(filepath.Ext(path))
 	switch ext {
-	case ".go", ".cpp", ".hpp", ".cc", ".h", ".rs", ".c", ".py":
+	case ".go", ".cpp", ".hpp", ".cc", ".h", ".rs", ".c", ".py", ".md", ".java", ".js", ".jsx", ".ts", ".tsx", ".kt":
 		return true
 	}
 	return false
@@ -69,6 +69,22 @@ func languageFromExtension(ext string) string {
 		return "C"
 	case ".py":
 		return "Python"
+	case ".md":
+		return "Markdown"
+	case ".java":
+		return "Java"
+	case ".js", ".jsx":
+		return "JavaScript"
+	case ".ts", ".tsx":
+		return "TypeScript"
+	case ".kt":
+		return "Kotlin"
+	case ".adoc":
+		return "ASCIIDoc"
+	case ".rst":
+		return "reStructuredText"
+	case ".txt":
+		return "Plain text"
 	default:
 		return "Unknown"
 	}
@@ -241,8 +257,7 @@ func outputProjectInfo(project ProjectInfo) {
 		for _, file := range project.Files {
 			fmt.Printf("### %s\n\n", file.Path)
 			fmt.Printf("```%s\n", file.Language)
-			fmt.Println(file.Contents)
-			fmt.Println("```\n")
+			fmt.Printf("%s```\n\n", file.Contents)
 		}
 	}
 }
@@ -250,8 +265,7 @@ func outputProjectInfo(project ProjectInfo) {
 func main() {
 	ignores, err := loadIgnorePatterns(".ignore", ".gitignore")
 	if err != nil {
-		fmt.Printf("Error loading ignore patterns: %v\n", err)
-		return
+		fmt.Fprintf(os.Stderr, "Warning: could not load ignore patterns: %v\n", err)
 	}
 
 	files, err := walkDirectoryAndCollectFiles(ignores)
@@ -263,14 +277,14 @@ func main() {
 	// Fetch project name from go.mod, if available
 	projectName, err := readProjectName("go.mod")
 	if err != nil {
-		fmt.Printf("Error reading project name from go.mod: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Warning: could not discover the project name from 'go.mod': %v\n", err)
 		projectName = filepath.Base(filepath.Dir("."))
 	}
 
 	// Fetch repository name from .git/config, if available
 	repoName, err := readGitConfig(".git/config")
 	if err != nil {
-		fmt.Printf("Error reading repository name from .git/config: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Warning: could not read the repository details from '.git/config': %v\n", err)
 		repoName = "Unknown"
 	}
 
