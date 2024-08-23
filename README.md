@@ -1,6 +1,8 @@
 # codesum
 
-Summarize Go, Python, C, C++, Rust, Java, Kotlin, Haskell, JavaScript or TypeScript  projects as a Markdown or JSON document that can be copied and pasted into an LLM.
+Summarize Go, Python, C, C++, Rust, Java, Kotlin, Haskell, JavaScript or TypeScript  projects as a Markdown or JSON document.
+
+This makes it quick and easy to ie. copy several source files to the clipboard and then paste them into an AI / LLM frontend.
 
 ## Installation
 
@@ -10,20 +12,13 @@ Summarize Go, Python, C, C++, Rust, Java, Kotlin, Haskell, JavaScript or TypeScr
 
 Run `codesum` in the root directory of a project.
 
-If you're on macOS, you might want to run `codesum | pbcopy` to copy all relevant code into the clipboard.
+### Linux
 
-This alias is also a possibility:
+    codesum -j | xclip -selection clipboard
 
-```bash
-alias c="$HOME/go/bin/codesum | /usr/bin/pbcopy"
-```
+### macOS
 
-Use the `-j` or `--json` flag to get a JSON summary instead.
-
-## Note
-
-* This utility is a bit experimental and may need more testing.
-* Batching source code into a given token length would be a nice addition. (TODO)
+    codesum -j | pbcopy
 
 ## General info
 
